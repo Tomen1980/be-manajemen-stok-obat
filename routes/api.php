@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\KategoriController;
 use App\Http\Controllers\Api\PasienController;
+use App\Http\Controllers\Api\VendorController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -19,4 +20,7 @@ Route::middleware('jwtMiddleware')->group(function () {
     Route::post('auth/refresh-token', [AuthController::class, 'refreshToken']);
     Route::get('user', [AuthController::class, 'getUserProfile']);
     Route::apiResource('kategori',KategoriController::class);
+    Route::apiResource('pasien',PasienController::class);
+    Route::apiResource('vendor',VendorController::class);
+
 });
