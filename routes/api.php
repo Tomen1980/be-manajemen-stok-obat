@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\KategoriController;
 use App\Http\Controllers\Api\PasienController;
 use App\Http\Controllers\Api\VendorController;
+use App\Http\Controllers\Api\ObatController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -22,5 +23,7 @@ Route::middleware('jwtMiddleware')->group(function () {
     Route::apiResource('kategori',KategoriController::class);
     Route::apiResource('pasien',PasienController::class);
     Route::apiResource('vendor',VendorController::class);
+    Route::apiResource('obat',ObatController::class);
+    Route::get('cek-restok-obat', [ObatController::class, 'cekRestokObat']);
 
 });

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('nama');
             $table->integer('stok')->default(0);
             $table->integer('min_stok')->default(0);
-            $table->integer('harga_jual');
+            $table->integer('harga_jual')->default(0);
             $table->text('deskripsi');
             $table->string('foto');
             $table->bigInteger('kategori_id')->unsigned();
