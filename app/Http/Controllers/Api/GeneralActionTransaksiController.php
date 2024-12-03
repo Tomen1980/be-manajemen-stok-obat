@@ -119,20 +119,71 @@ class GeneralActionTransaksiController extends Controller
     
 }
 
-    public function generateInvoiceAll(Request $request){
-        $transaksi = TransaksiModel::with(['TransaksiItem','TransaksiItem.ObatDetail', 'TransaksiItem.ObatDetail.Obat'])->where('status', 'selesai')->get();
-        if($transaksi->isEmpty()){
+    // public function generateInvoiceAll(Request $request){
+    //     $transaksi = TransaksiModel::with(['TransaksiItem','TransaksiItem.ObatDetail', 'TransaksiItem.ObatDetail.Obat'])->where('status', 'selesai')->get();
+    //     if($transaksi->isEmpty()){
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'transaksi not found'
+    //         ]);
+    //     }
+    //     $title = 'Transaksi Seluruh Obat Klinik';
+    //     $formatFile = 'document-'.$title.'.pdf';
+    //     $pdf = Pdf::loadView('pdf.invoiceAll',[
+    //         'title' => $title,
+    //         'transaksi' => $transaksi
+    //     ]);
+    //     return $pdf->download($formatFile);
+    // }
+
+    public function generateInvoiceAll(Request $request)
+{
+    try {
+        $query = TransaksiModel::with(['TransaksiItem', 'TransaksiItem.ObatDetail', 'TransaksiItem.ObatDetail.Obat'])
+            ->where('status', 'selesai');
+
+        // Filter kategori pembelian/penjualan
+        if ($request->has('kategori') && !empty($request->kategori)) {
+            $query->where('tipe', $request->kategori); // 'tipe' adalah kolom untuk kategori
+        }
+
+        // Filter berdasarkan tanggal
+        if ($request->has('tanggal_awal') && $request->has('tanggal_akhir')) {
+            $tanggalAwal = $request->tanggal_awal;
+            $tanggalAkhir = $request->tanggal_akhir;
+
+            if ($tanggalAwal && $tanggalAkhir) {
+                $query->whereBetween('tanggal', [$tanggalAwal, $tanggalAkhir]);
+            }
+        }
+
+        // Ambil hasil query
+        $transaksi = $query->get();
+
+        // Validasi jika data tidak ditemukan
+        if ($transaksi->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'transaksi not found'
+                'message' => 'Transaksi not found',
             ]);
         }
+
+        // Generate PDF
         $title = 'Transaksi Seluruh Obat Klinik';
-        $formatFile = 'document-'.$title.'.pdf';
-        $pdf = Pdf::loadView('pdf.invoiceAll',[
+        $formatFile = 'document-' . $title . '.pdf';
+
+        $pdf = Pdf::loadView('pdf.invoiceAll', [
             'title' => $title,
-            'transaksi' => $transaksi
+            'transaksi' => $transaksi,
         ]);
+
         return $pdf->download($formatFile);
+    } catch (Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage(),
+        ]);
     }
+}
+
 }

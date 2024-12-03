@@ -23,9 +23,9 @@ class ObatController extends Controller
                 $data = ObatModel::with(['kategori', 'vendor']) // Memuat relasi kategori dan vendor
                     ->when($search, function ($query, $search) {
                         $query->where(function ($query) use ($search) {
-                            $query->where('nama', 'ILIKE', '%' . $search . '%') // Pencarian di kolom obat.nama
+                            $query->where('nama', 'LIKE', '%' . $search . '%') // Pencarian di kolom obat.nama
                                 ->orWhereHas('vendor', function ($query) use ($search) { // Pencarian di relasi vendor.nama
-                                    $query->where('nama', 'ILIKE', '%' . $search . '%');
+                                    $query->where('nama', 'LIKE', '%' . $search . '%');
                                 });
                         });
                     })
@@ -36,7 +36,7 @@ class ObatController extends Controller
                                 $query->where('kategori_id', $kategori); // Filter berdasarkan kategori_id
                             } else {
                                 $query->orWhereHas('kategori', function ($query) use ($kategori) { // Filter berdasarkan nama kategori
-                                    $query->where('nama', 'ILIKE', '%' . $kategori . '%');
+                                    $query->where('nama', 'LIKE', '%' . $kategori . '%');
                                 });
                             }
                         });
