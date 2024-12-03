@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\ObatModel;
+use App\Models\ObatDetailModel;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class ObatController extends Controller
 {
@@ -225,5 +227,74 @@ class ObatController extends Controller
             ]);
         }
     }
+
+    // public function detailObat($id){
+    //     try{
+    //         $data = ObatDetailModel::where('id_obat', $id)->get();
+    //         if (!$data) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Data not found'
+    //             ]);
+    //         }
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'Success get data',
+    //             'data' => $data
+    //         ]);
+    //     }catch(Exception $e){
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => $e
+    //         ]);
+    //     }
+    // }
+
     
+    public function detailObat($id){
+        try {
+            $data = ObatDetailModel::where('id_obat', $id)->get();
+    
+            if ($data->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data not found',
+                ]);
+            }
+    
+            // Tambahkan status ke setiap item
+            $data = $data->map(function ($item) {
+                $currentDate = Carbon::now();
+                $expiryDate = Carbon::parse($item->tgl_kadaluwarsa);
+    
+                $differenceInMonths = $currentDate->diffInMonths($expiryDate, false);
+    
+                if ($differenceInMonths >= 12) {
+                    $item->status = 'Masih baik';
+                } elseif ($differenceInMonths >= 6) {
+                    $item->status = 'Segera dijual';
+                } elseif ($differenceInMonths >= 3) {
+                    $item->status = 'Hampir kadaluarsa, tidak disarankan dijual';
+                } elseif ($differenceInMonths < 0) {
+                    $item->status = 'Segera dimusnahkan';
+                } else {
+                    $item->status = 'Tidak layak jual';
+                }
+    
+                return $item;
+            });
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'Success get data',
+                'data' => $data,
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ]);
+        }
+    }
+
 }
