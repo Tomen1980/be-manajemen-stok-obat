@@ -51,6 +51,7 @@ class TransaksiMasukController extends Controller
     }
 
     public function show($id){
+        
         try{
             $transaksi = TransaksiModel::with(['TransaksiItem','TransaksiItem.ObatDetail', 'TransaksiItem.ObatDetail.Obat'])->where('tipe', 'pembelian')->where('id', $id)->get();
             if( $transaksi->isEmpty() ) {
@@ -274,6 +275,12 @@ class TransaksiMasukController extends Controller
             }
             // Kurangi total harga dengan item lama
             $transaksi = TransaksiModel::find($item->id_transaksi);
+            if($transaksi->status == 'selesai'){
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Transaksi sudah selesai'
+                ]);
+            }
             $transaksi->total_harga = $transaksi->total_harga - $item->total_harga;
             $transaksi->save();
 

@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\PasienController;
 use App\Http\Controllers\Api\VendorController;
 use App\Http\Controllers\Api\ObatController;
 use App\Http\Controllers\Api\TransaksiMasukController;
+use App\Http\Controllers\Api\TransaksiPenjualanController;
 use App\Http\Controllers\Api\GeneralActionTransaksiController;
 
 Route::get('/user', function (Request $request) {
@@ -29,10 +30,15 @@ Route::middleware('jwtMiddleware')->group(function () {
     Route::get('cek-restok-obat', [ObatController::class, 'cekRestokObat']);
     Route::get('detail-obat/{id}', [ObatController::class, 'detailObat']);
 
+    // Transaksi Pembelian Barang
     Route::apiResource('transaksi-masuk',TransaksiMasukController::class);
     Route::post('buat-transaksi-masuk', [TransaksiMasukController::class, 'buatTransaksiMasuk']);
     Route::post('tambah-transaksi-masuk-obat', [TransaksiMasukController::class, 'tambahTransaksiMasukObat']);
     Route::put('update-transaksi-masuk-obat/{id}', [TransaksiMasukController::class, 'updateTransaksiMasukObat']);
+
+    // Transaksi Penjualan Barang
+    Route::apiResource('transaksi-penjualan',TransaksiMasukController::class);
+
 
     // General
     Route::delete('hapus-transaksi/{id}', [GeneralActionTransaksiController::class, 'hapusTransaksi']);

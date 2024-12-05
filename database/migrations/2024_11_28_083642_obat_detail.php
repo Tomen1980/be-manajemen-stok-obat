@@ -19,6 +19,7 @@ return new class extends Migration
             $table->date('tgl_masuk');
             $table->bigInteger('id_obat')->unsigned();
             $table->foreign('id_obat')->references('id')->on('obat')->onUpdate('cascade')->onDelete('cascade');
+            $table->enum('status', ['lunas', 'tunggakan'])->default('tunggakan');
             $table->timestamps();
         });
     }

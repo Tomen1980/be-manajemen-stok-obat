@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\TransaksiModel;
+use App\Models\ObatModel;
+use App\Models\ObatDetailModel;
 use App\Models\TransaksiItemModel;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -46,31 +48,57 @@ class GeneralActionTransaksiController extends Controller
         }
     }
 
-    public function updateStatusTransaksi( $id){
-        try{
-            $data = TransaksiModel::find($id);
-            if(!$data){
+    public function updateStatusTransaksi($id)
+    {
+        try {
+            // Temukan transaksi dengan item terkait dan detail obat
+            $data = TransaksiModel::with(['TransaksiItem', 'TransaksiItem.ObatDetail', 'TransaksiItem.ObatDetail.Obat'])->find($id);
+
+    
+            // Jika data tidak ditemukan, kirimkan respon error
+            if (!$data) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Data not found'
                 ]);
             }
 
+            if($data->status == 'selesai'){
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Transaksi sudah selesai'
+                ]);
+            }
+
+
+    
+            // Iterasi setiap item transaksi
+            foreach ($data->TransaksiItem as $item) {
+                $detailObat = ObatDetailModel::find($item->id_obat_detail);
+                $detailObat->status = 'lunas';
+                $detailObat->save();
+                $obat = ObatModel::find($item->ObatDetail->id_obat);
+                $obat->stok = $obat->stok + $item->jumlah;
+                $obat->save();
+            }
+    
+            // Perbarui status transaksi menjadi selesai
             $data->update([
                 'status' => 'selesai'
             ]);
+    
             return response()->json([
                 'success' => true,
-                'message' => 'Success update data',
-                'data' => $data
+                'message' => 'Success update transaction and update stock',
             ]);
-    }catch(Exception $e){
-        return response()->json([
-            'success' => false,
-            'message' => $e
-        ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
     }
-    }
+    
 
     public function generateInvoiceById(Request $request){
 
@@ -87,7 +115,13 @@ class GeneralActionTransaksiController extends Controller
         $id = $request->id_transaksi;
     
         $transaksi = TransaksiModel::with(['TransaksiItem','TransaksiItem.ObatDetail', 'TransaksiItem.ObatDetail.Obat'])->where('tipe', 'pembelian')->where('id', $id)->get();
-        
+        if($transaksi[0]->status !== 'selesai'){
+            return response()->json([
+                'success' => false,
+                'message' => 'Selesaikan transaksi terlebih dahulu'
+            ]);
+        }
+
         if($transaksi->isEmpty()){
             return response()->json([
                 'success' => false,
@@ -119,22 +153,6 @@ class GeneralActionTransaksiController extends Controller
     
 }
 
-    // public function generateInvoiceAll(Request $request){
-    //     $transaksi = TransaksiModel::with(['TransaksiItem','TransaksiItem.ObatDetail', 'TransaksiItem.ObatDetail.Obat'])->where('status', 'selesai')->get();
-    //     if($transaksi->isEmpty()){
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'transaksi not found'
-    //         ]);
-    //     }
-    //     $title = 'Transaksi Seluruh Obat Klinik';
-    //     $formatFile = 'document-'.$title.'.pdf';
-    //     $pdf = Pdf::loadView('pdf.invoiceAll',[
-    //         'title' => $title,
-    //         'transaksi' => $transaksi
-    //     ]);
-    //     return $pdf->download($formatFile);
-    // }
 
     public function generateInvoiceAll(Request $request)
 {

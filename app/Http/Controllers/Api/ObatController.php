@@ -253,7 +253,7 @@ class ObatController extends Controller
     
     public function detailObat($id){
         try {
-            $data = ObatDetailModel::where('id_obat', $id)->get();
+            $data = ObatDetailModel::where('id_obat', $id)->where('status', 'lunas')->get();
     
             if ($data->isEmpty()) {
                 return response()->json([
@@ -270,15 +270,15 @@ class ObatController extends Controller
                 $differenceInMonths = $currentDate->diffInMonths($expiryDate, false);
     
                 if ($differenceInMonths >= 12) {
-                    $item->status = 'Masih baik';
+                    $item->info = 'Masih baik';
                 } elseif ($differenceInMonths >= 6) {
-                    $item->status = 'Segera dijual';
+                    $item->info = 'Segera dijual';
                 } elseif ($differenceInMonths >= 3) {
-                    $item->status = 'Hampir kadaluarsa, tidak disarankan dijual';
+                    $item->info = 'Hampir kadaluarsa, tidak disarankan dijual';
                 } elseif ($differenceInMonths < 0) {
-                    $item->status = 'Segera dimusnahkan';
+                    $item->info = 'Segera dimusnahkan';
                 } else {
-                    $item->status = 'Tidak layak jual';
+                    $item->info = 'Tidak layak jual';
                 }
     
                 return $item;
