@@ -53,7 +53,6 @@ class GeneralActionTransaksiController extends Controller
         try {
             // Temukan transaksi dengan item terkait dan detail obat
             $data = TransaksiModel::with(['TransaksiItem', 'TransaksiItem.ObatDetail', 'TransaksiItem.ObatDetail.Obat'])->find($id);
-
     
             // Jika data tidak ditemukan, kirimkan respon error
             if (!$data) {
@@ -70,8 +69,38 @@ class GeneralActionTransaksiController extends Controller
                 ]);
             }
 
+            if($data->tipe == 'penjualan'){
+                // return $data;
 
+                // kurangi stok obat pada detail obat
+                foreach ($data->TransaksiItem as $item) {
+                    $detailObat = ObatDetailModel::find($item->id_obat_detail);
+                    if($detailObat->stok < $item->jumlah){
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Stok obat tidak mencukupi'
+                        ]);
+                    }
+                    $detailObat->stok = $detailObat->stok - $item->jumlah;
+                    $detailObat->save();
+                    $obat = ObatModel::find($item->ObatDetail->id_obat);
+                    $obat->stok = $obat->stok - $item->jumlah;
+                    $obat->save();
+
+                        // Perbarui status transaksi menjadi selesai
+                    $data->update([
+                        'status' => 'selesai'
+                    ]);
+                }
     
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Success update transaction pembelian',
+                ]);
+            }
+
+           
+
             // Iterasi setiap item transaksi
             foreach ($data->TransaksiItem as $item) {
                 $detailObat = ObatDetailModel::find($item->id_obat_detail);

@@ -20,7 +20,7 @@ class ObatController extends Controller
                 $search = $request->get('search');
                 $kategori = $request->get('kategori');
 
-                $data = ObatModel::with(['kategori', 'vendor']) // Memuat relasi kategori dan vendor
+                $data = ObatModel::with(['kategori', 'vendor', 'ObatDetail' => function($query){$query->where('stok', '>', 0);}]) // Memuat relasi kategori dan vendor
                     ->when($search, function ($query, $search) {
                         $query->where(function ($query) use ($search) {
                             $query->where('nama', 'LIKE', '%' . $search . '%') // Pencarian di kolom obat.nama
@@ -60,7 +60,10 @@ class ObatController extends Controller
             }
 
             // $data = ObatModel::all();
-            $data = ObatModel::with(['kategori', 'vendor'])->paginate(12);
+            $data = ObatModel::with(['kategori', 'vendor', 
+            'ObatDetail'=>function($query){
+                $query->where('stok', '>', 0);
+            }])->paginate(12);
             return response()->json([
                 'success' => true,
                 'message' => 'Success get all data',
@@ -76,7 +79,11 @@ class ObatController extends Controller
 
     public function show($id){
         try{
-            $data = ObatModel::with(['kategori', 'vendor'])->find($id);
+            $data = ObatModel::with(['kategori', 'vendor',
+            'ObatDetail'=>function($query){
+                $query->where('stok', '>', 0);
+            }
+            ])->find($id);
             if (!$data) {
                 return response()->json([
                     'success' => false,
@@ -228,32 +235,10 @@ class ObatController extends Controller
         }
     }
 
-    // public function detailObat($id){
-    //     try{
-    //         $data = ObatDetailModel::where('id_obat', $id)->get();
-    //         if (!$data) {
-    //             return response()->json([
-    //                 'success' => false,
-    //                 'message' => 'Data not found'
-    //             ]);
-    //         }
-    //         return response()->json([
-    //             'success' => true,
-    //             'message' => 'Success get data',
-    //             'data' => $data
-    //         ]);
-    //     }catch(Exception $e){
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => $e
-    //         ]);
-    //     }
-    // }
-
     
     public function detailObat($id){
         try {
-            $data = ObatDetailModel::where('id_obat', $id)->where('status', 'lunas')->get();
+            $data = ObatDetailModel::where('id_obat', $id)->where('status', 'lunas')->where('stok', '>', 0)->get();
     
             if ($data->isEmpty()) {
                 return response()->json([

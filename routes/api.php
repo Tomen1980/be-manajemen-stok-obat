@@ -35,9 +35,11 @@ Route::middleware('jwtMiddleware')->group(function () {
     Route::post('buat-transaksi-masuk', [TransaksiMasukController::class, 'buatTransaksiMasuk']);
     Route::post('tambah-transaksi-masuk-obat', [TransaksiMasukController::class, 'tambahTransaksiMasukObat']);
     Route::put('update-transaksi-masuk-obat/{id}', [TransaksiMasukController::class, 'updateTransaksiMasukObat']);
-
+    
     // Transaksi Penjualan Barang
-    Route::apiResource('transaksi-penjualan',TransaksiMasukController::class);
+    Route::apiResource('transaksi-penjualan',TransaksiPenjualanController::class);
+    Route::post('buat-transaksi-penjualan', [TransaksiPenjualanController::class, 'buatTransaksiPenjualan']);
+    Route::post('tambah-transaksi-penjualan-obat', [TransaksiPenjualanController::class, 'tambahTransaksiPenjualanObat']);
 
 
     // General

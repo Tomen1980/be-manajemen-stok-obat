@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\TransaksiModel;
 use App\Models\TransaksiItemModel;
 use App\Models\ObatDetailModel;
+use App\Models\ObatModel;
 
 class TransaksiMasukController extends Controller
 {
@@ -205,6 +206,13 @@ class TransaksiMasukController extends Controller
         }
 
         try{
+            $obat = ObatModel::find($request->id_obat);
+            if(!$obat) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Obat tidak ditemukan'
+                ]);
+            }
             // Memilih transaksi Obat
             $obat = new ObatDetailModel();
             $obat->id_obat = $request->id_obat;
