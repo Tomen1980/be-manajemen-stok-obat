@@ -65,7 +65,7 @@ class TransaksiPenjualanController extends Controller
                 $query->select('id', 'tgl_kadaluwarsa', 'id_obat');
             },
             'TransaksiItem.ObatDetail.Obat' => function ($query) {
-                $query->select('id', 'nama', 'harga_jual');
+                $query->select('id', 'nama', 'harga_jual','stok');
             }
         ])
         ->where('tipe', 'penjualan')
@@ -129,6 +129,12 @@ class TransaksiPenjualanController extends Controller
         }
         
         $detailObat = ObatDetailModel::with('obat')->find($request->id_detail_obat);
+        if(!$detailObat) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Detail obat tidak ditemukan'
+            ]);
+        }
         if($detailObat->stok < $request->jumlah || $detailObat->Obat->stok == 0){
             return response()->json([
                 'success' => false,
@@ -160,8 +166,6 @@ class TransaksiPenjualanController extends Controller
         $transaksi = TransaksiModel::find($transaksi->id);
         $transaksi->total_harga = $transaksi->total_harga + $transaksiItem->total_harga;
         $transaksi->save();
-
-
 
         return response()->json([
             'success' => true,
@@ -270,4 +274,75 @@ class TransaksiPenjualanController extends Controller
         }
        
     }
+
+    public function updateTransaksiPenjualanObat(Request $request, $id){
+        $validator = Validator::make($request->all(), [
+            'jumlah' => 'required|numeric',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()
+            ]);
+        }
+
+        try{
+        
+            $item = TransaksiItemModel::find($id);
+            if(!$item) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Item tidak ditemukan'
+                ]);
+            }
+
+            $transaksi = TransaksiModel::find($item->id_transaksi);
+            if($transaksi->status == 'selesai'){
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Transaksi sudah selesai'
+                ]);
+            }
+
+            $detailObat = ObatDetailModel::with('obat')->find($item->id_obat_detail);
+
+            if($detailObat->stok < $request->jumlah || $detailObat->Obat->stok == 0){
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Stok obat tidak mencukupi'
+                ]);
+            }
+
+            // Kurangi total harga dengan item lama
+            $transaksi->total_harga = $transaksi->total_harga - $item->total_harga;
+            $transaksi->save();
+
+             // Update Item baru
+             $item->total_harga =  $request->jumlah * $detailObat->Obat->harga_jual;
+             $item->jumlah = $request->jumlah;
+             $item->save();
+
+             // tambahkan jumlah transaksi yang sekarang
+             $transaksi->total_harga = $transaksi->total_harga + $item->total_harga;
+             $transaksi->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Transaksi berhasil diupdate',
+                'data' => [
+                    'transaksi' => $transaksi,
+                    'transaksi_item' => $item,
+                    'obat_detail' => $detailObat
+                ]
+            ]);
+
+        }catch(\Exception $e){
+            return response()->json([
+                'success' => false,
+                'message' => $e
+            ]);
+        }
+    }
+
 }

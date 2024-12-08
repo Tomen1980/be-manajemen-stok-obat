@@ -40,6 +40,7 @@ Route::middleware('jwtMiddleware')->group(function () {
     Route::apiResource('transaksi-penjualan',TransaksiPenjualanController::class);
     Route::post('buat-transaksi-penjualan', [TransaksiPenjualanController::class, 'buatTransaksiPenjualan']);
     Route::post('tambah-transaksi-penjualan-obat', [TransaksiPenjualanController::class, 'tambahTransaksiPenjualanObat']);
+    Route::put('update-transaksi-penjualan-obat/{id}', [TransaksiPenjualanController::class, 'updateTransaksiPenjualanObat']);
 
 
     // General

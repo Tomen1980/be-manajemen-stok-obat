@@ -281,7 +281,6 @@ class TransaksiMasukController extends Controller
                     'message' => 'Item tidak ditemukan'
                 ]);
             }
-            // Kurangi total harga dengan item lama
             $transaksi = TransaksiModel::find($item->id_transaksi);
             if($transaksi->status == 'selesai'){
                 return response()->json([
@@ -289,6 +288,7 @@ class TransaksiMasukController extends Controller
                     'message' => 'Transaksi sudah selesai'
                 ]);
             }
+            // Kurangi total harga dengan item lama
             $transaksi->total_harga = $transaksi->total_harga - $item->total_harga;
             $transaksi->save();
 
