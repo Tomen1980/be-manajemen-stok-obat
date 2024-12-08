@@ -138,7 +138,8 @@
         <div class="total">
             Total Keseluruhan: {{ number_format($transaksi->total_harga, 2) }}
         </div>
-
+        <br>
+        <br>
         @endforeach
     </div>
 </body>

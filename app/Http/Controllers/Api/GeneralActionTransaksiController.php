@@ -68,9 +68,8 @@ class GeneralActionTransaksiController extends Controller
                     'message' => 'Transaksi sudah selesai'
                 ]);
             }
-
             if($data->tipe == 'penjualan'){
-                // return $data;
+
 
                 // kurangi stok obat pada detail obat
                 foreach ($data->TransaksiItem as $item) {
@@ -143,7 +142,7 @@ class GeneralActionTransaksiController extends Controller
         }
         $id = $request->id_transaksi;
     
-        $transaksi = TransaksiModel::with(['TransaksiItem','TransaksiItem.ObatDetail', 'TransaksiItem.ObatDetail.Obat'])->where('tipe', 'pembelian')->where('id', $id)->get();
+        $transaksi = TransaksiModel::with(['TransaksiItem','TransaksiItem.ObatDetail', 'TransaksiItem.ObatDetail.Obat'])->where('id', $id)->get();
         if($transaksi[0]->status !== 'selesai'){
             return response()->json([
                 'success' => false,
