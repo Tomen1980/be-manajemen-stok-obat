@@ -14,7 +14,7 @@ class PasienController extends Controller
         try{
             if($request->get('search')){
                 $search = $request->get('search');
-                $data = PasienModel::where('nama', 'LIKE', '%'.$search.'%')->orWhere('no_telp', 'LIKE', '%'.$search.'%')->orWhere('tgl_lahir', 'LIKE', '%'.$search.'%')->paginate(12);
+                $data = PasienModel::where('nama', 'LIKE', '%'.$search.'%')->orWhere('no_telp', 'LIKE', '%'.$search.'%')->orWhere('tgl_lahir', 'LIKE', '%'.$search.'%')->get();
                 
                 if($data->isEmpty()){
                     return response()->json([
@@ -29,7 +29,7 @@ class PasienController extends Controller
                 ]);
             }
 
-            $data = PasienModel::paginate(12);
+            $data = PasienModel::get();
             return response()->json([
                 'success' => true,
                 'message' => 'Success get all data',

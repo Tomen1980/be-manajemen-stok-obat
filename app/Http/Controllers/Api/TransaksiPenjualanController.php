@@ -39,7 +39,7 @@ class TransaksiPenjualanController extends Controller
                 $query->where('deskripsi', 'LIKE', '%' . $search . '%')
                       ->orWhere('tanggal', 'LIKE', '%' . $search . '%');
             })
-            ->paginate(12);
+            ->get();
 
             if ($transaksi->isEmpty()) {
                 return response()->json([
@@ -69,7 +69,7 @@ class TransaksiPenjualanController extends Controller
             }
         ])
         ->where('tipe', 'penjualan')
-        ->paginate(12);
+        ->get();
 
         return response()->json([
             'success' => true,

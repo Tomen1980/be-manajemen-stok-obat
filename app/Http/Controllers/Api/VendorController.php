@@ -15,7 +15,7 @@ class VendorController extends Controller
         try{
             if($request->get('search')){
                 $search = $request->get('search');
-                $data = VendorModel::where('nama', 'LIKE', '%'.$search.'%')->orWhere('no_telp', 'LIKE', '%'.$search.'%')->orWhere('alamat', 'LIKE', '%'.$search.'%')->paginate(12);
+                $data = VendorModel::where('nama', 'LIKE', '%'.$search.'%')->orWhere('no_telp', 'LIKE', '%'.$search.'%')->orWhere('alamat', 'LIKE', '%'.$search.'%')->get();
                 
                 if($data->isEmpty()){
                     return response()->json([
@@ -30,7 +30,7 @@ class VendorController extends Controller
                 ]);
             }
 
-            $data = VendorModel::paginate(12);
+            $data = VendorModel::get();
             return response()->json([
                 'success' => true,
                 'message' => 'Success get all data',

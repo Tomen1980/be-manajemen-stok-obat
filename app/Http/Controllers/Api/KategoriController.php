@@ -11,7 +11,7 @@ class KategoriController extends Controller
 {
    public function index(){
         try{
-            $data = KategoriModel::paginate(12);
+            $data = KategoriModel::get();
             return response()->json([
                 'success' => true,
                 'message' => 'Success get all data',

@@ -43,7 +43,7 @@ class ObatController extends Controller
                     })
 
                     ->orderBy('id', 'desc') // Mengurutkan berdasarkan ID
-                    ->paginate(12); 
+                    ->get(); 
                 
             if($data->isEmpty()){
                 return response()->json([
@@ -63,7 +63,7 @@ class ObatController extends Controller
             $data = ObatModel::with(['kategori', 'vendor', 
             'ObatDetail'=>function($query){
                 $query->where('stok', '>', 0);
-            }])->paginate(12);
+            }])->get();
             return response()->json([
                 'success' => true,
                 'message' => 'Success get all data',
@@ -109,7 +109,7 @@ class ObatController extends Controller
         $validator = Validator::make($request->all(), [
             'nama' => 'required|string|max:255',
             'deskripsi' => 'required|string',
-            'foto' => 'required|string',
+            'foto' => 'required|file|mimes:jpg,jpeg,png|max:2048',
             'kategori_id' => 'required|numeric',
             'id_vendor' => 'required|numeric',
         ]);
@@ -122,10 +122,25 @@ class ObatController extends Controller
         }
 
         try{
+            $publicPath = null;
+            if ($request->hasFile('foto')) {
+                $file = $request->file('foto');
+    
+                // Buat nama file unik dengan hash dan ekstensi asli
+                $extension = $file->getClientOriginalExtension();
+                $filename = uniqid() . '_' . time() . '.' . $extension;
+    
+                $destinationPath = public_path('uploads'); // Tentukan direktori tujuan di public/uploads
+                $file->move($destinationPath, $filename); // Pindahkan file ke direktori tujuan
+    
+                // Buat URL publik
+                $publicPath = url('uploads/' . $filename);
+            }
+
             $data = ObatModel::create([
                 'nama' => $request->nama,
                 'deskripsi' => $request->deskripsi,
-                'foto' => $request->foto,
+                'foto' => $publicPath,
                 'kategori_id' => $request->kategori_id, 
                 'id_vendor' => $request->id_vendor
             ]);
@@ -142,13 +157,15 @@ class ObatController extends Controller
         }
     }
 
-    public function update(Request $request, $id){
+    public function update($id, Request $request){
+
+        return $request->all();
         $validator = Validator::make($request->all(), [
             'nama' => 'required|string|max:255',
             'min_stok' => 'required|numeric',
             'harga_jual' => 'required|numeric',
             'deskripsi' => 'required|string',
-            'foto' => 'required|string',
+            'foto' => 'nullable|string',
             'kategori_id' => 'required|numeric',
             'id_vendor' => 'required|numeric',
         ]);
@@ -168,6 +185,30 @@ class ObatController extends Controller
                     'message' => 'Data not found'
                 ]);
             }
+            // cek foto 
+            if (!$request->hasFile('foto')){
+                $publicPath = $data->foto;
+            }else {
+                $file = $request->file('foto');
+
+                // Buat nama file unik dengan hash dan ekstensi asli
+                $extension = $file->getClientOriginalExtension();
+                $filename = uniqid() . '_' . time() . '.' . $extension;
+    
+                $destinationPath = public_path('uploads'); // Tentukan direktori tujuan di public/uploads
+                $file->move($destinationPath, $filename); // Pindahkan file ke direktori tujuan
+    
+                // Buat URL publik
+                $publicPath = url('uploads/' . $filename);
+
+                // Hapus foto lama jika ada
+                $fotoLama = $data->foto;
+                if ($fotoLama) {
+                    unlink($fotoLama);
+                }
+            }
+
+
             $data->update([
                 'nama' => $request->nama,
                 'min_stok' => $request->min_stok,

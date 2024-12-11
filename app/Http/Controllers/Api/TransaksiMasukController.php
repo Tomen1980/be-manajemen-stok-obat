@@ -22,7 +22,7 @@ class TransaksiMasukController extends Controller
                 ->where('tipe', 'pembelian')
                 ->Where('deskripsi', 'LIKE', '%'.$search.'%')
                 ->orWhere('tanggal', 'LIKE', '%'.$search.'%')
-                ->paginate(12);
+                ->get();
 
                 if($transaksi->isEmpty()){
                     return response()->json([
@@ -37,7 +37,7 @@ class TransaksiMasukController extends Controller
                     ]);
                 
             }
-            $transaksi = TransaksiModel::with(['TransaksiItem','User','Pasien','TransaksiItem.ObatDetail', 'TransaksiItem.ObatDetail.Obat'])->where('tipe', 'pembelian')->paginate(12);
+            $transaksi = TransaksiModel::with(['TransaksiItem','User','Pasien','TransaksiItem.ObatDetail', 'TransaksiItem.ObatDetail.Obat'])->where('tipe', 'pembelian')->get();
             return response()->json([
                 'success' => true,
                 'message' => 'Success get data',
