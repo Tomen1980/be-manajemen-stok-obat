@@ -159,13 +159,12 @@ class ObatController extends Controller
 
     public function update($id, Request $request){
 
-        return $request->all();
         $validator = Validator::make($request->all(), [
             'nama' => 'required|string|max:255',
             'min_stok' => 'required|numeric',
             'harga_jual' => 'required|numeric',
             'deskripsi' => 'required|string',
-            'foto' => 'nullable|string',
+            'foto' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
             'kategori_id' => 'required|numeric',
             'id_vendor' => 'required|numeric',
         ]);
@@ -189,32 +188,47 @@ class ObatController extends Controller
             if (!$request->hasFile('foto')){
                 $publicPath = $data->foto;
             }else {
-                $file = $request->file('foto');
-
-                // Buat nama file unik dengan hash dan ekstensi asli
-                $extension = $file->getClientOriginalExtension();
-                $filename = uniqid() . '_' . time() . '.' . $extension;
+                
+                try{
+                    $file = $request->file('foto');
     
-                $destinationPath = public_path('uploads'); // Tentukan direktori tujuan di public/uploads
-                $file->move($destinationPath, $filename); // Pindahkan file ke direktori tujuan
+                    // Buat nama file unik dengan hash dan ekstensi asli
+                    $extension = $file->getClientOriginalExtension();
+                    $filename = uniqid() . '_' . time() . '.' . $extension;
+        
+                    $destinationPath = public_path('uploads'); // Tentukan direktori tujuan di public/uploads
+                    $file->move($destinationPath, $filename); // Pindahkan file ke direktori tujuan
+        
+                    // Buat URL publik
+                    $publicPath = url('uploads/' . $filename);
     
-                // Buat URL publik
-                $publicPath = url('uploads/' . $filename);
-
-                // Hapus foto lama jika ada
-                $fotoLama = $data->foto;
-                if ($fotoLama) {
-                    unlink($fotoLama);
-                }
+                    // Hapus foto lama jika ada
+                    $fotoLama = $data->foto;
+                    $baseUrl = "http://127.0.0.1:8000/";
+                    $path = str_replace($baseUrl, '', $fotoLama);
+                    if (file_exists(public_path($path))) {
+                        unlink(public_path($path));
+                    }else{
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Foto not found at public path'
+                        ]);
+                    }
+                
+                }catch(Exception $e){
+                    return response()->json([
+                        'success' => false,
+                        'message' => $e
+                    ]);
+                }   
             }
-
 
             $data->update([
                 'nama' => $request->nama,
                 'min_stok' => $request->min_stok,
                 'harga_jual' => $request->harga_jual,
                 'deskripsi' => $request->deskripsi,
-                'foto' => $request->foto,
+                'foto' => $publicPath,
                 'kategori_id' => $request->kategori_id, 
                 'id_vendor' => $request->id_vendor
             ]);
@@ -234,12 +248,25 @@ class ObatController extends Controller
     public function destroy($id){
         try{
             $data = ObatModel::find($id);
+
             if (!$data) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Data not found'
                 ]);
             }
+
+            $baseUrl = "http://127.0.0.1:8000/";
+            $path = str_replace($baseUrl, '', $data->foto);
+            if (file_exists(public_path($path))) {
+                unlink(public_path($path));
+            }else{
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Foto not found at public path'
+                ]);
+            }
+
             $data->delete();
             return response()->json([
                 'success' => true,
