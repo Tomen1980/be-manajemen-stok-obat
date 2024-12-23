@@ -20,7 +20,7 @@ class ObatController extends Controller
                 $search = $request->get('search');
                 $kategori = $request->get('kategori');
 
-                $data = ObatModel::with(['kategori', 'vendor', 'ObatDetail' => function($query){$query->where('stok', '>', 0);}]) // Memuat relasi kategori dan vendor
+                $data = ObatModel::with(['kategori', 'vendor', 'ObatDetail' => function($query){$query->where('stok', '>', 0)->where('status', 'lunas');}]) // Memuat relasi kategori dan vendor
                     ->when($search, function ($query, $search) {
                         $query->where(function ($query) use ($search) {
                             $query->where('nama', 'LIKE', '%' . $search . '%') // Pencarian di kolom obat.nama
@@ -62,7 +62,7 @@ class ObatController extends Controller
             // $data = ObatModel::all();
             $data = ObatModel::with(['kategori', 'vendor', 
             'ObatDetail'=>function($query){
-                $query->where('stok', '>', 0);
+                $query->where('stok', '>', 0)->where('status', 'lunas');
             }])->get();
             return response()->json([
                 'success' => true,
@@ -81,7 +81,7 @@ class ObatController extends Controller
         try{
             $data = ObatModel::with(['kategori', 'vendor',
             'ObatDetail'=>function($query){
-                $query->where('stok', '>', 0);
+                $query->where('stok', '>', 0)->where('status', 'lunas');
             }
             ])->find($id);
             if (!$data) {

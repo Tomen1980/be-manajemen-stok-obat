@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+
 class TransaksiItemModel extends Model
 {
     use HasFactory;
@@ -18,5 +19,10 @@ class TransaksiItemModel extends Model
     public function ObatDetail(): HasOne
     {
         return $this->hasOne(ObatDetailModel::class, 'id', 'id_obat_detail');
+    }
+
+    public function Transaksi(): HasOne
+    {
+        return $this->hasOne(TransaksiModel::class, 'id', 'id_transaksi');
     }
 }

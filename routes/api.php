@@ -49,5 +49,7 @@ Route::middleware('jwtMiddleware')->group(function () {
     Route::put('update-status-transaksi/{id}', [GeneralActionTransaksiController::class, 'updateStatusTransaksi']);
     Route::post('generate-invoic-by-id', [GeneralActionTransaksiController::class, 'generateInvoiceById']);
     Route::post('generate-all-invoice', [GeneralActionTransaksiController::class, 'generateInvoiceAll']);
+    Route::get('get-transaksi', [GeneralActionTransaksiController::class, 'getTransaksi']);
+    Route::delete('hapus-detail-obat/{id}', [GeneralActionTransaksiController::class, 'hapusDetailObat']);
 
 });
