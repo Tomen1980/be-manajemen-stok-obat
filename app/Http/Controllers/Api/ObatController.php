@@ -112,6 +112,8 @@ class ObatController extends Controller
             'foto' => 'required|file|mimes:jpg,jpeg,png|max:2048',
             'kategori_id' => 'required|numeric',
             'id_vendor' => 'required|numeric',
+            'harga_jual' => 'required|numeric',
+            'min_stok' => 'required|numeric',
         ]);
 
         if ($validator->fails()) {
@@ -142,7 +144,9 @@ class ObatController extends Controller
                 'deskripsi' => $request->deskripsi,
                 'foto' => $publicPath,
                 'kategori_id' => $request->kategori_id, 
-                'id_vendor' => $request->id_vendor
+                'id_vendor' => $request->id_vendor,
+                'harga_jual' => $request->harga_jual,
+                'min_stok' => $request->min_stok
             ]);
             return response()->json([
                 'success' => true,
@@ -283,7 +287,7 @@ class ObatController extends Controller
     
     public function cekRestokObat(){
         try{
-           $data = ObatModel::whereColumn('stok', '<=', 'min_stok')->paginate(12);
+           $data = ObatModel::whereColumn('stok', '<=', 'min_stok')->get();
             if(!$data){
                 return response()->json([
                     'success' => false,
