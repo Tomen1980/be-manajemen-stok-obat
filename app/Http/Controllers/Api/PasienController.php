@@ -69,7 +69,9 @@ class PasienController extends Controller
         $validator = Validator::make($request->all(), [
             'nama' => 'required|min:3|max:255',
             'tgl_lahir' => 'required|date',
-            'no_telp' => 'required|min:10|max:15',
+            'no_telp' => [
+                'regex:/^[0-9]{10,15}$/'
+            ],
         ]);
 
         if ($validator->fails()) {
@@ -102,7 +104,9 @@ class PasienController extends Controller
         $validator = Validator::make($request->all(), [
             'nama' => 'required|min:3|max:255',
             'tgl_lahir' => 'required|date',
-            'no_telp' => 'required|min:10|max:15',
+            'no_telp' => [
+                'regex:/^[0-9]{10,15}$/'
+            ],
         ]);
 
         if ($validator->fails()) {
